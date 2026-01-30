@@ -6,18 +6,21 @@ import '../../core/animations/animation_constants.dart';
 import '../../core/utils/responsive.dart';
 import '../../providers/theme_provider.dart';
 import 'widgets/qr_type_card.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../core/constants/brand_constants.dart';
+
 
 /// Home screen - Main landing page for the QR Code Generator
 ///
 /// This is the entry point of the app where users can choose between
-/// generating URL QR codes or WiFi QR codes.
+/// 7 different QR code types in a beautiful responsive grid.
 /// 
 /// Features:
 /// - Beautiful app branding with logo
-/// - Two interactive cards for URL and WiFi generators
+/// - 7 interactive cards for different QR types
 /// - Dark mode toggle with rotation animation
 /// - Smooth entrance animations (logo bounce, staggered cards)
-/// - Fully responsive design for phone/tablet/desktop
+/// - Fully responsive grid: 1 column (phone), 2 columns (tablet), 3 columns (desktop)
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -49,6 +52,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       _themeToggleController.forward();
     } else {
       _themeToggleController.reverse();
+    }
+  }
+
+  Future<void> _launchWebsite() async {
+    final uri = Uri.parse(BrandConstants.websiteUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
@@ -105,17 +115,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
                         SizedBox(height: responsive.cardSpacing * 1.5),
 
-                        // QR Type Cards with responsive layout
-                        _buildQRTypeCards(context, responsive),
+                        // QR Type Grid with responsive layout
+                        _buildQRTypeGrid(context, colorScheme, responsive),
 
                         SizedBox(height: responsive.cardSpacing),
 
                         // Footer hint with fade-in
                         FadeSlideIn(
-                          delay: AnimationDurations.staggerDelay * 4,
+                          delay: AnimationDurations.staggerDelay * 8,
                           child: _buildFooter(context, colorScheme, responsive),
                         ),
 
+
+                        // Digital Disconnections Footer
+                        FadeSlideIn(
+                          delay: AnimationDurations.staggerDelay * 9,
+                          child: _buildCompanyFooter(context, colorScheme, responsive),
+                        ),
                         SizedBox(height: responsive.spacing * 3),
                       ],
                     ),
@@ -132,17 +148,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   /// Build app branding section with logo bounce animation and responsive sizing
   Widget _buildBranding(BuildContext context, ColorScheme colorScheme, Responsive responsive) {
     final logoSize = responsive.value(
-      phone: 100.0,
-      tablet: 120.0,
-      desktop: 140.0,
+      phone: 180.0,
+      tablet: 220.0,
+      desktop: 260.0,
     );
     
-    final iconSize = responsive.value(
-      phone: 60.0,
-      tablet: 72.0,
-      desktop: 84.0,
-    );
-
     return Column(
       children: [
         // QR Code Logo with bounce entrance
@@ -154,36 +164,28 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             return Transform.scale(
               scale: value,
               child: Opacity(
-                opacity: value,
+                opacity: value.clamp(0.0, 1.0),
                 child: child,
               ),
             );
           },
           child: Container(
-            width: logoSize,
-            height: logoSize,
+            padding: EdgeInsets.all(responsive.spacing * 1.5),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  colorScheme.primary,
-                  colorScheme.secondary,
-                ],
-              ),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: colorScheme.primary.withValues(alpha: 0.3),
+                  color: BrandConstants.brandPrimary.withValues(alpha: 0.15),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
               ],
             ),
-            child: Icon(
-              Icons.qr_code_2_rounded,
-              size: iconSize,
-              color: Colors.white,
+            child: Image.asset(
+              BrandConstants.logoPath,
+              width: logoSize,
+              fit: BoxFit.contain,
             ),
           ),
         ),
@@ -228,71 +230,115 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  /// Build QR type selection cards with responsive layout
-  Widget _buildQRTypeCards(BuildContext context, Responsive responsive) {
-    final colorScheme = Theme.of(context).colorScheme;
+  /// Build QR type grid with responsive columns
+  Widget _buildQRTypeGrid(BuildContext context, ColorScheme colorScheme, Responsive responsive) {
+    final qrTypes = _getQRTypes(context, colorScheme);
     
-    // Use ResponsiveRowColumn for automatic layout switching
-    return ResponsiveRowColumn(
+    return ResponsiveGrid(
       spacing: responsive.cardSpacing,
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Wrap in Expanded for proper sizing in Row mode
-        if (!responsive.isPhone) 
-          Expanded(
-            child: StaggeredAnimation(
-              index: 1,
-              baseDelay: const Duration(milliseconds: 500),
-              child: _buildUrlCard(context, colorScheme),
-            ),
-          )
-        else
-          StaggeredAnimation(
-            index: 1,
-            baseDelay: const Duration(milliseconds: 500),
-            child: _buildUrlCard(context, colorScheme),
-          ),
-        
-        if (!responsive.isPhone)
-          Expanded(
-            child: StaggeredAnimation(
-              index: 2,
-              baseDelay: const Duration(milliseconds: 500),
-              child: _buildWifiCard(context, colorScheme),
-            ),
-          )
-        else
-          StaggeredAnimation(
-            index: 2,
-            baseDelay: const Duration(milliseconds: 500),
-            child: _buildWifiCard(context, colorScheme),
-          ),
-      ],
+      phoneColumns: 1,
+      tabletColumns: 2,
+      desktopColumns: 3,
+      children: List.generate(
+        qrTypes.length,
+        (index) => StaggeredAnimation(
+          index: index,
+          baseDelay: const Duration(milliseconds: 500),
+          child: qrTypes[index],
+        ),
+      ),
     );
   }
 
-  /// Build URL QR code card
-  Widget _buildUrlCard(BuildContext context, ColorScheme colorScheme) {
-    return QRTypeCard(
-      icon: Icons.link_rounded,
-      title: 'URL QR Code',
-      subtitle: 'Create a QR code for any website link',
-      primaryColor: colorScheme.primary,
-      secondaryColor: colorScheme.tertiary,
-      onTap: () => context.goToUrlGenerator(),
-    );
+  /// Get list of all QR type cards
+  List<Widget> _getQRTypes(BuildContext context, ColorScheme colorScheme) {
+    return [
+      // 1. URL/Website
+      QRTypeCard(
+        icon: Icons.link_rounded,
+        title: 'URL/Website',
+        subtitle: 'Create a QR code for any website link',
+        primaryColor: colorScheme.primary,
+        secondaryColor: colorScheme.tertiary,
+        onTap: () => context.goToUrlGenerator(),
+      ),
+      
+      // 2. WiFi Network
+      QRTypeCard(
+        icon: Icons.wifi_rounded,
+        title: 'WiFi Network',
+        subtitle: 'Share WiFi credentials instantly',
+        primaryColor: colorScheme.secondary,
+        secondaryColor: colorScheme.primary,
+        onTap: () => context.goToWifiGenerator(),
+      ),
+      
+      // 3. Contact/vCard
+      QRTypeCard(
+        icon: Icons.contact_page_rounded,
+        title: 'Contact/vCard',
+        subtitle: 'Share contact information with a tap',
+        primaryColor: colorScheme.tertiary,
+        secondaryColor: colorScheme.secondary,
+        onTap: () => _showComingSoon(context, 'Contact'),
+      ),
+      
+      // 4. Email
+      QRTypeCard(
+        icon: Icons.email_rounded,
+        title: 'Email',
+        subtitle: 'Generate QR code with email address',
+        primaryColor: colorScheme.primary,
+        secondaryColor: colorScheme.secondary,
+        onTap: () => _showComingSoon(context, 'Email'),
+      ),
+      
+      // 5. Phone
+      QRTypeCard(
+        icon: Icons.phone_rounded,
+        title: 'Phone',
+        subtitle: 'Call a number with one scan',
+        primaryColor: colorScheme.secondary,
+        secondaryColor: colorScheme.tertiary,
+        onTap: () => _showComingSoon(context, 'Phone'),
+      ),
+      
+      // 6. SMS
+      QRTypeCard(
+        icon: Icons.message_rounded,
+        title: 'SMS',
+        subtitle: 'Send a text message instantly',
+        primaryColor: const Color(0xFF2196F3), // Blue
+        secondaryColor: const Color(0xFF00BCD4), // Cyan
+        onTap: () => _showComingSoon(context, 'SMS'),
+      ),
+      
+      // 7. Location
+      QRTypeCard(
+        icon: Icons.location_on_rounded,
+        title: 'Location',
+        subtitle: 'Share GPS coordinates or address',
+        primaryColor: const Color(0xFF4CAF50), // Green
+        secondaryColor: const Color(0xFF009688), // Teal
+        onTap: () => _showComingSoon(context, 'Location'),
+      ),
+    ];
   }
 
-  /// Build WiFi QR code card
-  Widget _buildWifiCard(BuildContext context, ColorScheme colorScheme) {
-    return QRTypeCard(
-      icon: Icons.wifi_rounded,
-      title: 'WiFi QR Code',
-      subtitle: 'Share WiFi credentials instantly',
-      primaryColor: colorScheme.secondary,
-      secondaryColor: colorScheme.primary,
-      onTap: () => context.goToWifiGenerator(),
+  /// Show coming soon dialog for unimplemented QR types
+  void _showComingSoon(BuildContext context, String type) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('$type QR Code'),
+        content: Text('$type QR code generator is coming soon!'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -318,7 +364,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           SizedBox(width: responsive.spacing * 1.5),
           Expanded(
             child: Text(
-              'Tap a card to start creating your QR code',
+              'Choose a QR type to get started',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
                 fontSize: responsive.value(
@@ -333,4 +379,99 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ),
     );
   }
+
+  /// Build Digital Disconnections company footer with link
+  Widget _buildCompanyFooter(BuildContext context, ColorScheme colorScheme, Responsive responsive) {
+    return Column(
+      children: [
+        // Made by text
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Made with ',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontSize: responsive.value(
+                  phone: 13.0,
+                  tablet: 14.0,
+                  desktop: 15.0,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.favorite,
+              size: responsive.value(
+                phone: 14.0,
+                tablet: 15.0,
+                desktop: 16.0,
+              ),
+              color: Colors.red.shade400,
+            ),
+            Text(
+              ' by ',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontSize: responsive.value(
+                  phone: 13.0,
+                  tablet: 14.0,
+                  desktop: 15.0,
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: _launchWebsite,
+              child: Text(
+                BrandConstants.companyNameFull,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: BrandConstants.brandPrimary,
+                  fontWeight: FontWeight.bold,
+                  decoration: TextDecoration.underline,
+                  decorationColor: BrandConstants.brandPrimary,
+                  fontSize: responsive.value(
+                    phone: 13.0,
+                    tablet: 14.0,
+                    desktop: 15.0,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: responsive.spacing * 0.5),
+        // Website link
+        GestureDetector(
+          onTap: _launchWebsite,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.language_rounded,
+                size: responsive.value(
+                  phone: 12.0,
+                  tablet: 13.0,
+                  desktop: 14.0,
+                ),
+                color: colorScheme.primary,
+              ),
+              SizedBox(width: responsive.spacing * 0.5),
+              Text(
+                BrandConstants.websiteUrl,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.primary,
+                  decoration: TextDecoration.underline,
+                  fontSize: responsive.value(
+                    phone: 12.0,
+                    tablet: 13.0,
+                    desktop: 14.0,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
 }

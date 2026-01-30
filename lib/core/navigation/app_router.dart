@@ -7,6 +7,7 @@ import '../../screens/url_generator_screen.dart';
 import '../../screens/wifi_generator_screen.dart';
 import '../../screens/customize/customize_screen.dart';
 import '../../screens/export/export_screen.dart';
+import '../../screens/about/about_screen.dart';
 import '../../screens/error_screen.dart';
 
 /// Global router configuration for the application with custom page transitions.
@@ -61,6 +62,14 @@ final GoRouter appRouter = GoRouter(
         state: state,
       ),
     ),
+    GoRoute(
+      path: AppRoutes.about,
+      name: AppRoutes.aboutName,
+      pageBuilder: (context, state) => buildSlideFadeTransitionPage(
+        child: const AboutScreen(),
+        state: state,
+      ),
+    ),
   ],
   errorBuilder: (context, state) => ErrorScreen(
     error: state.error?.toString() ?? 'Unknown error',
@@ -87,6 +96,9 @@ extension NavigationExtension on BuildContext {
 
   /// Navigate to export screen
   void goToExport() => go(AppRoutes.exportScreen);
+
+  /// Navigate to about screen
+  void goToAbout() => go(AppRoutes.about);
 
   /// Navigate back if possible, otherwise go to home
   void goBackOrHome() {
@@ -126,4 +138,7 @@ extension GoRouterExtension on GoRouter {
 
   /// Navigate to export screen
   void goToExport() => go(AppRoutes.exportScreen);
+
+  /// Navigate to about screen
+  void goToAbout() => go(AppRoutes.about);
 }

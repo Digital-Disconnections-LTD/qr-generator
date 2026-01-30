@@ -10,15 +10,14 @@ import 'widgets/qr_type_card.dart';
 /// Home screen - Main landing page for the QR Code Generator
 ///
 /// This is the entry point of the app where users can choose between
-/// generating URL QR codes or WiFi QR codes.
+/// 7 different QR code types in a beautiful responsive grid.
 /// 
 /// Features:
 /// - Beautiful app branding with logo
-/// - Two interactive cards for URL and WiFi generators
+/// - 7 interactive cards for different QR types
 /// - Dark mode toggle with rotation animation
-/// - About button for app information
 /// - Smooth entrance animations (logo bounce, staggered cards)
-/// - Fully responsive design for phone/tablet/desktop
+/// - Fully responsive grid: 1 column (phone), 2 columns (tablet), 3 columns (desktop)
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -65,26 +64,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         child: ResponsiveCenter(
           child: CustomScrollView(
             slivers: [
-              // App Bar with about and theme toggle
+              // App Bar with theme toggle
               SliverAppBar(
                 floating: true,
                 snap: true,
                 backgroundColor: colorScheme.surface,
                 elevation: 0,
                 actions: [
-                  // About button
-                  Padding(
-                    padding: EdgeInsets.only(right: responsive.spacing * 0.5),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.info_outline_rounded,
-                        size: responsive.iconSize,
-                      ),
-                      tooltip: 'About',
-                      onPressed: () => context.goToAbout(),
-                    ),
-                  ),
-                  // Theme toggle button
                   Padding(
                     padding: EdgeInsets.only(right: responsive.spacing),
                     child: IconButton(
@@ -119,14 +105,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
                         SizedBox(height: responsive.cardSpacing * 1.5),
 
-                        // QR Type Cards with responsive layout
-                        _buildQRTypeCards(context, responsive),
+                        // QR Type Grid with responsive layout
+                        _buildQRTypeGrid(context, colorScheme, responsive),
 
                         SizedBox(height: responsive.cardSpacing),
 
                         // Footer hint with fade-in
                         FadeSlideIn(
-                          delay: AnimationDurations.staggerDelay * 4,
+                          delay: AnimationDurations.staggerDelay * 8,
                           child: _buildFooter(context, colorScheme, responsive),
                         ),
 
@@ -242,71 +228,115 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  /// Build QR type selection cards with responsive layout
-  Widget _buildQRTypeCards(BuildContext context, Responsive responsive) {
-    final colorScheme = Theme.of(context).colorScheme;
+  /// Build QR type grid with responsive columns
+  Widget _buildQRTypeGrid(BuildContext context, ColorScheme colorScheme, Responsive responsive) {
+    final qrTypes = _getQRTypes(context, colorScheme);
     
-    // Use ResponsiveRowColumn for automatic layout switching
-    return ResponsiveRowColumn(
+    return ResponsiveGrid(
       spacing: responsive.cardSpacing,
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Wrap in Expanded for proper sizing in Row mode
-        if (!responsive.isPhone) 
-          Expanded(
-            child: StaggeredAnimation(
-              index: 1,
-              baseDelay: const Duration(milliseconds: 500),
-              child: _buildUrlCard(context, colorScheme),
-            ),
-          )
-        else
-          StaggeredAnimation(
-            index: 1,
-            baseDelay: const Duration(milliseconds: 500),
-            child: _buildUrlCard(context, colorScheme),
-          ),
-        
-        if (!responsive.isPhone)
-          Expanded(
-            child: StaggeredAnimation(
-              index: 2,
-              baseDelay: const Duration(milliseconds: 500),
-              child: _buildWifiCard(context, colorScheme),
-            ),
-          )
-        else
-          StaggeredAnimation(
-            index: 2,
-            baseDelay: const Duration(milliseconds: 500),
-            child: _buildWifiCard(context, colorScheme),
-          ),
-      ],
+      phoneColumns: 1,
+      tabletColumns: 2,
+      desktopColumns: 3,
+      children: List.generate(
+        qrTypes.length,
+        (index) => StaggeredAnimation(
+          index: index,
+          baseDelay: const Duration(milliseconds: 500),
+          child: qrTypes[index],
+        ),
+      ),
     );
   }
 
-  /// Build URL QR code card
-  Widget _buildUrlCard(BuildContext context, ColorScheme colorScheme) {
-    return QRTypeCard(
-      icon: Icons.link_rounded,
-      title: 'URL QR Code',
-      subtitle: 'Create a QR code for any website link',
-      primaryColor: colorScheme.primary,
-      secondaryColor: colorScheme.tertiary,
-      onTap: () => context.goToUrlGenerator(),
-    );
+  /// Get list of all QR type cards
+  List<Widget> _getQRTypes(BuildContext context, ColorScheme colorScheme) {
+    return [
+      // 1. URL/Website
+      QRTypeCard(
+        icon: Icons.link_rounded,
+        title: 'URL/Website',
+        subtitle: 'Create a QR code for any website link',
+        primaryColor: colorScheme.primary,
+        secondaryColor: colorScheme.tertiary,
+        onTap: () => context.goToUrlGenerator(),
+      ),
+      
+      // 2. WiFi Network
+      QRTypeCard(
+        icon: Icons.wifi_rounded,
+        title: 'WiFi Network',
+        subtitle: 'Share WiFi credentials instantly',
+        primaryColor: colorScheme.secondary,
+        secondaryColor: colorScheme.primary,
+        onTap: () => context.goToWifiGenerator(),
+      ),
+      
+      // 3. Contact/vCard
+      QRTypeCard(
+        icon: Icons.contact_page_rounded,
+        title: 'Contact/vCard',
+        subtitle: 'Share contact information with a tap',
+        primaryColor: colorScheme.tertiary,
+        secondaryColor: colorScheme.secondary,
+        onTap: () => _showComingSoon(context, 'Contact'),
+      ),
+      
+      // 4. Email
+      QRTypeCard(
+        icon: Icons.email_rounded,
+        title: 'Email',
+        subtitle: 'Generate QR code with email address',
+        primaryColor: colorScheme.primary,
+        secondaryColor: colorScheme.secondary,
+        onTap: () => _showComingSoon(context, 'Email'),
+      ),
+      
+      // 5. Phone
+      QRTypeCard(
+        icon: Icons.phone_rounded,
+        title: 'Phone',
+        subtitle: 'Call a number with one scan',
+        primaryColor: colorScheme.secondary,
+        secondaryColor: colorScheme.tertiary,
+        onTap: () => _showComingSoon(context, 'Phone'),
+      ),
+      
+      // 6. SMS
+      QRTypeCard(
+        icon: Icons.message_rounded,
+        title: 'SMS',
+        subtitle: 'Send a text message instantly',
+        primaryColor: const Color(0xFF2196F3), // Blue
+        secondaryColor: const Color(0xFF00BCD4), // Cyan
+        onTap: () => _showComingSoon(context, 'SMS'),
+      ),
+      
+      // 7. Location
+      QRTypeCard(
+        icon: Icons.location_on_rounded,
+        title: 'Location',
+        subtitle: 'Share GPS coordinates or address',
+        primaryColor: const Color(0xFF4CAF50), // Green
+        secondaryColor: const Color(0xFF009688), // Teal
+        onTap: () => _showComingSoon(context, 'Location'),
+      ),
+    ];
   }
 
-  /// Build WiFi QR code card
-  Widget _buildWifiCard(BuildContext context, ColorScheme colorScheme) {
-    return QRTypeCard(
-      icon: Icons.wifi_rounded,
-      title: 'WiFi QR Code',
-      subtitle: 'Share WiFi credentials instantly',
-      primaryColor: colorScheme.secondary,
-      secondaryColor: colorScheme.primary,
-      onTap: () => context.goToWifiGenerator(),
+  /// Show coming soon dialog for unimplemented QR types
+  void _showComingSoon(BuildContext context, String type) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('$type QR Code'),
+        content: Text('$type QR code generator is coming soon!'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -332,7 +362,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           SizedBox(width: responsive.spacing * 1.5),
           Expanded(
             child: Text(
-              'Tap a card to start creating your QR code',
+              'Choose a QR type to get started',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
                 fontSize: responsive.value(

@@ -26,6 +26,10 @@ class AppRoutes {
   static const String exportScreen = '/export';
   static const String exportName = 'export';
 
+  /// About screen route - App story, mission, and information
+  static const String about = '/about';
+  static const String aboutName = 'about';
+
   /// List of all routes for validation
   static const List<String> allRoutes = [
     home,
@@ -33,6 +37,7 @@ class AppRoutes {
     wifiGenerator,
     customize,
     exportScreen,
+    about,
   ];
 
   /// Check if a route path is valid

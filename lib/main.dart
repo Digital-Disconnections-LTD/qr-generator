@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/navigation/app_router.dart';
+import 'core/constants/brand_constants.dart';
 import 'providers/qr_provider.dart';
 import 'providers/theme_provider.dart';
 
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp.router(
-            title: 'QR Code Generator',
+            title: BrandConstants.appNameWithBranding,
             debugShowCheckedModeBanner: false,
             theme: themeProvider.lightTheme,
             darkTheme: themeProvider.darkTheme,
