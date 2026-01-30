@@ -57,7 +57,7 @@ class _QRTypeCardState extends State<QRTypeCard> {
             ),
           ),
           child: Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               gradient: LinearGradient(
@@ -74,8 +74,8 @@ class _QRTypeCardState extends State<QRTypeCard> {
               children: [
                 // Icon with gradient background
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 56,
+                  height: 56,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
@@ -89,41 +89,45 @@ class _QRTypeCardState extends State<QRTypeCard> {
                     boxShadow: [
                       BoxShadow(
                         color: widget.primaryColor.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: Icon(
                     widget.icon,
-                    size: 40,
+                    size: 28,
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
                 // Title
                 Text(
                   widget.title,
-                  style: theme.textTheme.titleLarge?.copyWith(
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 // Subtitle
                 Text(
                   widget.subtitle,
-                  style: theme.textTheme.bodyMedium?.copyWith(
+                  style: theme.textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 // Arrow indicator
                 Icon(
                   Icons.arrow_forward_rounded,
-                  size: 24,
+                  size: 18,
                   color: widget.primaryColor,
                 ),
               ],

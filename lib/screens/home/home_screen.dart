@@ -236,9 +236,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     
     return ResponsiveGrid(
       spacing: responsive.cardSpacing,
-      phoneColumns: 1,
-      tabletColumns: 2,
-      desktopColumns: 3,
+      phoneColumns: 2,
+      tabletColumns: 3,
+      desktopColumns: 4,
       children: List.generate(
         qrTypes.length,
         (index) => StaggeredAnimation(
