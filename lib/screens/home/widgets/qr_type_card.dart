@@ -101,7 +101,7 @@ class _QRTypeCardState extends State<QRTypeCard> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                // Title
+                // Title only - no subtitle
                 Text(
                   widget.title,
                   style: theme.textTheme.titleMedium?.copyWith(
@@ -111,24 +111,6 @@ class _QRTypeCardState extends State<QRTypeCard> {
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                // Subtitle
-                Text(
-                  widget.subtitle,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                // Arrow indicator
-                Icon(
-                  Icons.arrow_forward_rounded,
-                  size: 18,
-                  color: widget.primaryColor,
                 ),
               ],
             ),
