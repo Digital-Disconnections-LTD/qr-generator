@@ -1,0 +1,42 @@
+/// Route path and name constants for the QR Code Generator app.
+///
+/// This file contains all route definitions used throughout the application.
+/// Using constants ensures type-safety and prevents typos in route names.
+class AppRoutes {
+  // Private constructor to prevent instantiation
+  AppRoutes._();
+
+  /// Home screen route - Main landing page
+  static const String home = '/';
+  static const String homeName = 'home';
+
+  /// URL Generator screen route - Create QR codes from URLs
+  static const String urlGenerator = '/url-generator';
+  static const String urlGeneratorName = 'url-generator';
+
+  /// WiFi Generator screen route - Create QR codes for WiFi credentials
+  static const String wifiGenerator = '/wifi-generator';
+  static const String wifiGeneratorName = 'wifi-generator';
+
+  /// Customize screen route - Apply decorative borders to QR codes
+  static const String customize = '/customize';
+  static const String customizeName = 'customize';
+
+  /// Export screen route - Export and share QR codes
+  static const String exportScreen = '/export';
+  static const String exportName = 'export';
+
+  /// List of all routes for validation
+  static const List<String> allRoutes = [
+    home,
+    urlGenerator,
+    wifiGenerator,
+    customize,
+    exportScreen,
+  ];
+
+  /// Check if a route path is valid
+  static bool isValidRoute(String path) {
+    return allRoutes.contains(path);
+  }
+}
